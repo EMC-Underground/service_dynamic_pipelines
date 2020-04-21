@@ -16,17 +16,16 @@ resources:
   - name: repo-list
     type: github-list-repos
     source:
-      auth_token: ((auth_token))
-      org: ((orginization))
-      include_regex: ((include_regex))
+      auth_token: ((repo-list.repo_auth_token))
+      org: ((repo-list.orginization))
+      include_regex: ((repo-list.include_regex))
 
 
 jobs:
 - name: deploy-script-pipelines
   public: true
   plan:
-  - get: customer-a-script-repo
-  - get: two-hours
+  - get: every-((schedule_minutes))-minutes
     trigger: true
   - get: repo-list
     params:
@@ -41,7 +40,6 @@ jobs:
           repository: nctiggy/image_seti_builder
           tag: latest
       inputs:
-        - name: customer-a-script-repo
         - name: repo-list
       run:
         path: bash
@@ -60,12 +58,4 @@ jobs:
             rm pipeline.yml
             fly -t main unpause-pipeline -p "dynamic-${i}"
           done
-      outputs:
-        - name: report
-    on_success:
-      put: slack-alert
-      params:
-        text_file: report/test.csv
-        username: jeeves@awesome.com
-        icon_emoji: ghost
 
