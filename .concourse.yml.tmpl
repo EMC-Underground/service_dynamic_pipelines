@@ -7,6 +7,12 @@ resource_types:
       tag: v0.3.1
 
 resources:
+  - name: service_dynamic_pipelines
+    type: git
+    source:
+      uri: https://github.com/EMC-Underground/service_dynamic_pipelines.git
+      branch: master
+
   - name: every-((schedule_minutes))-minutes
     type: time
     source:
@@ -20,13 +26,13 @@ resources:
       org: ((repo-list.orginization))
       include_regex: ((repo-list.include_regex))
 
-
 jobs:
 - name: deploy-script-pipelines
   public: true
   plan:
   - get: every-((schedule_minutes))-minutes
     trigger: true
+  - get: service_dynamic_pipelines
   - get: repo-list
     params:
       output_format: txt
@@ -41,6 +47,7 @@ jobs:
           tag: latest
       inputs:
         - name: repo-list
+        - name: service_dynamic_pipelines
       run:
         path: bash
         args:
@@ -48,7 +55,7 @@ jobs:
         - |
           ls
           repos=$(cat ./repo-list/repository-list.txt)
-          cd customer-a-script-repo
+          cd service_dynamic_pipelines
           for i in $repos
           do
             curl_return=$(curl -fsSL https://raw.githubusercontent.com/EMC-Underground/$i/master/pipeline.yml.tmpl);
