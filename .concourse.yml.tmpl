@@ -1,0 +1,71 @@
+---
+resource_types:
+  - name: github-list-repos
+    type: docker-image
+    source:
+      repository: quay.io/coralogix/concourse-resource-github-list-repos
+      tag: v0.3.1
+
+resources:
+  - name: every-((schedule_minutes))-minutes
+    type: time
+    source:
+      location: America/Los_Angeles
+      interval: ((schedule_minutes))m
+
+  - name: repo-list
+    type: github-list-repos
+    source:
+      auth_token: ((auth_token))
+      org: ((orginization))
+      include_regex: ((include_regex))
+
+
+jobs:
+- name: deploy-script-pipelines
+  public: true
+  plan:
+  - get: customer-a-script-repo
+  - get: two-hours
+    trigger: true
+  - get: repo-list
+    params:
+      output_format: txt
+  - task: create-script-pipelines
+    params:
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: nctiggy/image_seti_builder
+          tag: latest
+      inputs:
+        - name: customer-a-script-repo
+        - name: repo-list
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          ls
+          repos=$(cat ./repo-list/repository-list.txt)
+          cd customer-a-script-repo
+          for i in $repos
+          do
+            curl_return=$(curl -fsSL https://raw.githubusercontent.com/EMC-Underground/$i/master/pipeline.yml.tmpl);
+            echo "$curl_return" | python3 variables_injector.py > pipeline.yml
+            fly -t main login -c http://concourse.10.237.198.110.xip.io -u test -p test
+            fly -t main sp -n -c pipeline.yml -p "dynamic-${i}"
+            rm pipeline.yml
+            fly -t main unpause-pipeline -p "dynamic-${i}"
+          done
+      outputs:
+        - name: report
+    on_success:
+      put: slack-alert
+      params:
+        text_file: report/test.csv
+        username: jeeves@awesome.com
+        icon_emoji: ghost
+
