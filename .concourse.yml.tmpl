@@ -13,6 +13,12 @@ resources:
       uri: https://github.com/EMC-Underground/service_dynamic_pipelines.git
       branch: master
 
+  - name: service_scripts
+    type: git
+    source:
+      uri: https://github.com/EMC-Underground/service_scripts.git
+      branch: master
+
   - name: every-((schedule_minutes))-minutes
     type: time
     source:
@@ -33,6 +39,7 @@ jobs:
   - get: every-((schedule_minutes))-minutes
     trigger: true
   - get: service_dynamic_pipelines
+  - get: service_scripts
   - get: repo-list
     params:
       output_format: txt
@@ -48,6 +55,7 @@ jobs:
       inputs:
         - name: repo-list
         - name: service_dynamic_pipelines
+        - name: service_scripts
       run:
         path: bash
         args:
@@ -55,14 +63,17 @@ jobs:
         - |
           ls
           repos=$(cat ./repo-list/repository-list.txt)
-          cd service_dynamic_pipelines
+          echo $repos
           for i in $repos
           do
-            curl_return=$(curl -fsSL https://raw.githubusercontent.com/EMC-Underground/$i/master/pipeline.yml.tmpl);
-            echo "$curl_return" | python3 variables_injector.py > pipeline.yml
-            fly -t main login -c http://concourse.10.237.198.110.xip.io -u test -p test
-            fly -t main sp -n -c pipeline.yml -p "dynamic_${i}"
+            service_script_concourse_return=$(curl -fsSL https://raw.githubusercontent.com/EMC-Underground/service_scripts/master/.concourse.yml.tmpl);
+            echo "$service_script_concourse_return" > pipeline.yml
+            vars_yml_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.orginization))/$i/master/vars.yml)
+            echo "$vars_yml_return" > vars.yml
+            fly -t main login -c http://concourse.((dnssuffix)) -u ((concourse_username)) -p ((concourse_password))
+            fly -t main sp -n -c pipeline.yml -p "dynamic_${i}" -l vars.yml -v repo_name=$i -v repo_url=https://github.com/repo-list.orginization/$i
             rm pipeline.yml
+            rm vars.yml
             fly -t main unpause-pipeline -p "dynamic_${i}"
           done
 

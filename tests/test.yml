@@ -1,0 +1,31 @@
+---
+scripts:
+  - name: get-clusters
+    file: s.ps1
+    output: file.csv
+    branch: master
+    params:
+      VSPHERE_PASSWORD: ((vsphere_password))
+      VSPHERE_USERNAME: ((vsphere_username))
+
+schedule:
+  minutes: 120
+
+slack:
+  - name: stack_alert
+    url: http://ilovecookies.com
+    username: bradley.soper@dell.com
+    icon_emoji: goat
+
+email:
+  - name: to_brad
+    host: smpt.dell.com
+    port: 583
+    anonymous: false
+    username: bsoper
+    password: secret_password
+    from: bradley.soper@dell.com
+    to:
+      - craig.j.smith@dell.com
+    cc:
+      - aaron.baldie@dell.com
