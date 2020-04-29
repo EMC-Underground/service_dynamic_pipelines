@@ -69,9 +69,10 @@ jobs:
             vars_yml_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.orginization))/$i/master/vars.yml)
             echo "$vars_yml_return" > vars.yml
             fly -t main login -c http://concourse.((dnssuffix)) -u ((concourse_username)) -p ((concourse_password))
-            fly -t main sp -n -c pipeline.yml -p "dynamic_${i}" -l vars.yml -v repo_name=$i -v repo_url=https://github.com/((repo-list.orginization))/$i
+            fly -t main set-team --team-name ((team_name)) --local-user ((concourse_username)) --non-interactive
+            fly -t ((team_name)) sp -n -c pipeline.yml -p "${i}_pipeline" -l vars.yml -v repo_name=$i -v repo_url=https://github.com/((repo-list.orginization))/$i
             rm pipeline.yml
             rm vars.yml
-            fly -t main unpause-pipeline -p "dynamic_${i}"
+            fly -t sbux unpause-pipeline -p "${i}_pipeline"
           done
 
