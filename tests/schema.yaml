@@ -16,19 +16,23 @@ script:
   name: str()
   file: str()
   params: map(required=False)
-  output: str(required=False)
+  input_file: str(required=False)
+  output_file: str(required=False)
   branch: str(required=False)
 
 # --- Slack Definition ---
 # name: This is the name of the slack channel
 # url: The webhook url of the slack channel, ideally kept as a secret in vault
 # username: The username the post in the channel is made as
+# text: 
 # icon_emoji: (Optional) Slack icon emoji associated with username
 #
 slack_channel:
   name: str()
   url: str()
   username: str()
+  text: str(required=False)
+  text_file: str(required=False)
   icon_emoji: str(required=False)
 
 # --- Email Notification ---
@@ -53,3 +57,7 @@ email_notification:
   from: str()
   to: list()
   cc: list(required=False)
+  subject: str(required=False)
+  subject_text: str(required=False)
+  body: str(required=False)
+  body_text: str(required=False)
