@@ -10,13 +10,13 @@ resources:
   - name: service_dynamic_pipelines
     type: git
     source:
-      uri: https://github.com/EMC-Underground/service_dynamic_pipelines.git
+      uri: https://github.com/((repo-list.orginization))/service_dynamic_pipelines.git
       branch: master
 
   - name: service_scripts
     type: git
     source:
-      uri: https://github.com/EMC-Underground/service_scripts.git
+      uri: https://github.com/((repo-list.orginization))/service_scripts.git
       branch: master
 
   - name: every-((schedule_minutes))-minutes
@@ -64,7 +64,7 @@ jobs:
           repos=$(cat ./repo-list/repository-list.txt)
           for i in $repos
           do
-            service_script_concourse_return=$(curl -fsSL https://raw.githubusercontent.com/EMC-Underground/service_scripts/master/.concourse.yml.tmpl);
+            service_script_concourse_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.orginization))/service_scripts/master/.concourse.yml.tmpl);
             echo "$service_script_concourse_return" > pipeline.yml
             vars_yml_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.orginization))/$i/master/vars.yml)
             echo "$vars_yml_return" > vars.yml
@@ -73,6 +73,6 @@ jobs:
             fly -t ((team_name)) sp -n -c pipeline.yml -p "${i}_pipeline" -l vars.yml -v repo_name=$i -v repo_url=https://github.com/((repo-list.orginization))/$i
             rm pipeline.yml
             rm vars.yml
-            fly -t sbux unpause-pipeline -p "${i}_pipeline"
+            fly -t ((team_name)) unpause-pipeline -p "${i}_pipeline"
           done
 
