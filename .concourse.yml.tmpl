@@ -10,13 +10,13 @@ resources:
   - name: service_dynamic_pipelines
     type: git
     source:
-      uri: https://github.com/((repo-list.orginization))/service_dynamic_pipelines.git
+      uri: https://github.com/((repo-list.organization))/service_dynamic_pipelines.git
       branch: master
 
   - name: service_scripts
     type: git
     source:
-      uri: https://github.com/((repo-list.orginization))/service_scripts.git
+      uri: https://github.com/((repo-list.organization))/service_scripts.git
       branch: master
 
   - name: every-((schedule_minutes))-minutes
@@ -29,11 +29,11 @@ resources:
     type: github-list-repos
     source:
       auth_token: ((repo-list.repo_auth_token))
-      org: ((repo-list.orginization))
+      org: ((repo-list.organization))
       include_regex: ((repo-list.include_regex))
 
 jobs:
-- name: deploy-script-pipelines
+- name: job_deploy-script-pipelines
   public: true
   plan:
   - get: every-((schedule_minutes))-minutes
@@ -64,13 +64,13 @@ jobs:
           repos=$(cat ./repo-list/repository-list.txt)
           for i in $repos
           do
-            service_script_concourse_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.orginization))/service_scripts/master/.concourse.yml.tmpl);
+            service_script_concourse_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.organization))/service_scripts/master/.concourse.yml.tmpl);
             echo "$service_script_concourse_return" > pipeline.yml
-            vars_yml_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.orginization))/$i/master/vars.yml)
+            vars_yml_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.organization))/$i/master/vars.yml)
             echo "$vars_yml_return" > vars.yml
             fly -t main set-team --team-name ((team_name)) --local-user ((concourse_username)) --non-interactive
             fly -t ((team_name)) login -n ((team_name)) -c http://concourse.((dnssuffix)) -u ((concourse_username)) -p ((concourse_password))
-            fly -t ((team_name)) sp -n -c pipeline.yml -p "${i}_pipeline" -l vars.yml -v repo_name=$i -v repo_url=https://github.com/((repo-list.orginization))/$i
+            fly -t ((team_name)) sp -n -c pipeline.yml -p "${i}_pipeline" -l vars.yml -v repo_name=$i -v repo_url=https://github.com/((repo-list.organization))/$i
             rm pipeline.yml
             rm vars.yml
             fly -t ((team_name)) unpause-pipeline -p "${i}_pipeline"
