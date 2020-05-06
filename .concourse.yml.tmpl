@@ -62,13 +62,13 @@ jobs:
         - -c
         - |
           repos=$(cat ./repo-list/repository-list.txt)
+          fly -t main set-team --team-name ((team_name)) --local-user ((concourse_username)) --non-interactive
           for i in $repos
           do
             service_script_concourse_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.organization))/service_scripts/master/.concourse.yml.tmpl);
             echo "$service_script_concourse_return" > pipeline.yml
             vars_yml_return=$(curl -fsSL https://raw.githubusercontent.com/((repo-list.organization))/$i/master/vars.yml)
             echo "$vars_yml_return" > vars.yml
-            fly -t main set-team --team-name ((team_name)) --local-user ((concourse_username)) --non-interactive
             fly -t ((team_name)) login -n ((team_name)) -c http://concourse.((dnssuffix)) -u ((concourse_username)) -p ((concourse_password))
             fly -t ((team_name)) sp -n -c pipeline.yml -p "${i}_pipeline" -l vars.yml -v repo_name=$i -v repo_url=https://github.com/((repo-list.organization))/$i
             rm pipeline.yml
