@@ -74,6 +74,6 @@ jobs:
             fly -t main sp -n -c pipeline.yml -p "${i}_pipeline" -l vars.yml -v repo_name=$i -v repo_url=https://github.com/((repo-list.organization))/$i
             rm pipeline.yml
             rm vars.yml
-            fly -t ((team_name)) unpause-pipeline -p "${i}_pipeline"
+            fly -t main unpause-pipeline -p "${i}_pipeline"
           done
 
