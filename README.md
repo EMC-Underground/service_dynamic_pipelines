@@ -7,5 +7,6 @@ The service dynamic pipeline builder is expecting a templatized version of your 
 
 ## How to use:
 1) Create a new Git hub repo with the following naming convention:
-   ''' "script_pipeline_<your unique name here>"
+   '''
+   "script_pipeline_<your unique name here>"
 
