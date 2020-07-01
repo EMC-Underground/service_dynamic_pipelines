@@ -1,4 +1,4 @@
-### Dynamic Script Pipelines Service
+# Dynamic Script Pipelines Service
 
 This repo is designed to dynamically build pipelines for Concourse to execute
 scripts and push the output to resources such as email, slack, ect...
